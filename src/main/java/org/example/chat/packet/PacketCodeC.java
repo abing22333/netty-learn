@@ -1,14 +1,23 @@
-package org.example.chapter08;
+package org.example.chat.packet;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
+import org.example.chat.serializer.Serializer;
 
+/**
+ * @author abing
+ */
 public class PacketCodeC {
+    public final static PacketCodeC INSTANCE = new PacketCodeC();
+
+    private PacketCodeC() {
+    }
 
     private final static int MAGIC_NUMBER = 0x12345678;
 
-    public ByteBuf encode(Packet packet) {
-        ByteBuf byteBuf = ByteBufAllocator.DEFAULT.ioBuffer();
+
+    public ByteBuf encode(ByteBufAllocator byteBufAllocator, Packet packet) {
+        ByteBuf byteBuf = byteBufAllocator.ioBuffer();
 
         byte[] bytes = Serializer.DEFAULT.serialize(packet);
 
@@ -35,9 +44,12 @@ public class PacketCodeC {
         byte[] bytes = new byte[length];
         byteBuf.readBytes(bytes);
 
-        Class<? extends Packet> requestType = Packet.Command.getRequestType(command);
-        Class<? extends Serializer> serializeType = Serializer.SerializerAlgorithm.getRequestType(serializerAlgorithm);
+        Class<? extends Packet> requestType = Packet.getRequestType(command);
+        Serializer serializer = Serializer.getSerializer(serializerAlgorithm);
 
-
+        if (requestType != null && serializer != null) {
+            return serializer.deserialize(requestType, bytes);
+        }
+        return null;
     }
 }
