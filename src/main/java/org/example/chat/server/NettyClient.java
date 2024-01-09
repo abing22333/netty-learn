@@ -1,12 +1,16 @@
-package org.example.chat.client;
+package org.example.chat.server;
 
 import io.netty.bootstrap.Bootstrap;
+import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import org.example.chapter06.FirstClientHandler;
+import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
+import org.example.chat.handler.*;
+import org.example.chat.packet.MessageRequestPacket;
+import org.example.chat.packet.PacketCodeC;
 import org.example.chat.util.LoginUtil;
 
 import java.util.Date;
@@ -22,8 +26,12 @@ public class NettyClient {
                 .channel(NioSocketChannel.class)
                 .handler(new ChannelInitializer<Channel>() {
                     @Override
-                    protected void initChannel(Channel ch) throws Exception {
-                        ch.pipeline().addLast(new ClientHandler());
+                    protected void initChannel(Channel channel) throws Exception {
+                        channel.pipeline().addLast(new LengthFieldBasedFrameDecoder(Integer.MAX_VALUE, 7, 4));
+                        channel.pipeline().addLast(new PacketDecoder());
+                        channel.pipeline().addLast(new LoginResponseHandler());
+                        channel.pipeline().addLast(new MessageRequestHandler());
+                        channel.pipeline().addLast(new PacketEncoder());
                     }
                 });
 
@@ -51,15 +59,17 @@ public class NettyClient {
         new Thread(() -> {
             while (!Thread.interrupted()) {
                 if (LoginUtil.hasLogin(channel)) {
-                    System.out.println("输入消息发送至服务器：");
+                    System.out.print("输入消息发送至服务器：");
                     Scanner scanner = new Scanner(System.in);
                     String line = scanner.nextLine();
 
-                } else {
+                    MessageRequestPacket packet = new MessageRequestPacket();
+                    packet.setMassage(line);
 
+                    ByteBuf buf = PacketCodeC.INSTANCE.encode(channel.alloc(), packet);
+                    channel.writeAndFlush(buf);
                 }
             }
-        })
-                .start();
+        }).start();
     }
 }

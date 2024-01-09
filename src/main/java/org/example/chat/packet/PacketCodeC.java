@@ -16,8 +16,7 @@ public class PacketCodeC {
     private final static int MAGIC_NUMBER = 0x12345678;
 
 
-    public ByteBuf encode(ByteBufAllocator byteBufAllocator, Packet packet) {
-        ByteBuf byteBuf = byteBufAllocator.ioBuffer();
+    public ByteBuf encode(ByteBuf byteBuf, Packet packet) {
 
         byte[] bytes = Serializer.DEFAULT.serialize(packet);
 
@@ -29,6 +28,11 @@ public class PacketCodeC {
         byteBuf.writeBytes(bytes);
 
         return byteBuf;
+    }
+
+    public ByteBuf encode(ByteBufAllocator byteBufAllocator, Packet packet) {
+        ByteBuf byteBuf = byteBufAllocator.ioBuffer();
+        return encode(byteBuf, packet);
     }
 
     public Packet decode(ByteBuf byteBuf) {

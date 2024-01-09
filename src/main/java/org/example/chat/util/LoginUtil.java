@@ -20,6 +20,6 @@ public class LoginUtil {
     public static boolean hasLogin(Channel channel) {
         Attribute<Boolean> loginAttr = channel.attr(LOGIN);
 
-        return loginAttr != null && loginAttr.get();
+        return loginAttr.get() != null && loginAttr.get();
     }
 }

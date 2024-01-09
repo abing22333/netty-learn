@@ -5,7 +5,11 @@ import io.netty.channel.ChannelInitializer;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import org.example.chapter06.FirstServerHandler;
+import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
+import org.example.chat.handler.LoginRequestHandler;
+import org.example.chat.handler.MessageRequestHandler;
+import org.example.chat.handler.PacketDecoder;
+import org.example.chat.handler.PacketEncoder;
 
 public class NettyServer {
     public static void main(String[] args) {
@@ -18,7 +22,11 @@ public class NettyServer {
                 .childHandler(new ChannelInitializer<NioSocketChannel>() {
                     @Override
                     protected void initChannel(NioSocketChannel channel) throws Exception {
-                        channel.pipeline().addLast(new ServerHandler());
+                        channel.pipeline().addLast(new LengthFieldBasedFrameDecoder(Integer.MAX_VALUE, 7, 4));
+                        channel.pipeline().addLast(new PacketDecoder());
+                        channel.pipeline().addLast(new LoginRequestHandler());
+                        channel.pipeline().addLast(new MessageRequestHandler());
+                        channel.pipeline().addLast(new PacketEncoder());
                     }
                 });
 
