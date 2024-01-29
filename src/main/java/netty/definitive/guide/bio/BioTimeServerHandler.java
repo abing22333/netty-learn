@@ -6,10 +6,10 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.Date;
 
-public class TimeServerHandler implements Runnable {
+public class BioTimeServerHandler implements Runnable {
     Socket socket;
 
-    public TimeServerHandler(Socket socket) {
+    public BioTimeServerHandler(Socket socket) {
         this.socket = socket;
     }
 
